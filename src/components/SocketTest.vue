@@ -15,8 +15,8 @@
         <div class="col-md-6">
           <form class="form-inline">
             <div class="form-group">
-              <label for="name">What is your name?</label>
-              <input type="text" id="name" class="form-control" v-model="send_message" placeholder="Your name here...">
+              <label for="name">What is message?</label>
+              <input type="text" id="name" class="form-control" v-model="send_message" placeholder="message">
             </div>
             <button id="send" type="submit" @click.prevent="send">Send</button>
           </form>
@@ -31,8 +31,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in received_messages" :key="item">
-                <td>{{ item }}</td>
+              <tr v-for="(item) in received_messages" :key="item.text">
+                <td>{{ item.from }}</td>
+                <td>{{ item.text }}</td>
+                <td>{{ item.time }}</td>
               </tr>
             </tbody>
           </table>
@@ -42,8 +44,7 @@
   </div>
 </template>
 <script>
-import SockJS from "sockjs-client";
-import Stomp from "webstomp-client";
+import socketClient from '../client/socketClient'
 
 export default {
   name: "SocketTest",
@@ -52,51 +53,33 @@ export default {
       received_messages: [],
       send_message: null,
       connected: false
-    };
+    }
   },
   methods: {
     send() {
-      console.log("Send message:" + this.send_message);
-      if (this.stompClient && this.stompClient.connected) {
-        const msg = { name: this.send_message };
-        console.log(JSON.stringify(msg));
-        this.stompClient.send("/app/ws/foo/send", JSON.stringify(msg), {});
-      }
+      const destination = '/app/ws/foo/send'
+      const message = {
+						from : 'socketClient',
+						text : this.send_message
+			}
+      socketClient.emit(destination, message)
     },
     connect() {
-      this.socket = new SockJS("URL");
-      this.stompClient = Stomp.over(this.socket);
-      this.stompClient.connect(
-        {},
-        frame => {
-          this.connected = true;
-          console.log(frame);
-          this.stompClient.subscribe("/topic/messages/foo", tick => {
-            console.log(tick);
-            this.received_messages.push(JSON.parse(tick.body).content);
-            console.log(this.received_messages)
-          });
-        },
-        error => {
-          console.log(error);
-          this.connected = false;
+      socketClient.getClient().onConnect = (frame) => {
+        console.log('Connected: ' + frame)
+        const topic = '/topic/messages/foo'
+        const callback = (message) => {
+          const tick = JSON.parse(message.body)
+          this.received_messages.push(tick)
         }
-      );
+        socketClient.subscribe(topic, callback)
+        this.connected = true
+      }
     },
     disconnect() {
-      if (this.stompClient) {
-        this.stompClient.disconnect();
-      }
-      this.connected = false;
+      socketClient.disconnect()
+      this.connected = false
     },
-    tickleConnection() {
-      this.connected ? this.disconnect() : this.connect();
-    }
-  },
-  mounted() {
-    // this.connect();
-  }
-};
+ },
+} 
 </script>
-<style scoped="">
-</style>
