@@ -2,6 +2,7 @@
 node_modules
 /dist
 
+dox.txt
 
 # local env files
 .env.local

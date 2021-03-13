@@ -64,7 +64,7 @@ export default {
       }
     },
     connect() {
-      this.socket = new SockJS("http://7d43db2c96eb.ngrok.io/ws");
+      this.socket = new SockJS("URL");
       this.stompClient = Stomp.over(this.socket);
       this.stompClient.connect(
         {},
