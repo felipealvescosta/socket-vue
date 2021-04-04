@@ -67,7 +67,7 @@ export default {
     connect() {
       socketClient.getClient().onConnect = (frame) => {
         console.log('Connected: ' + frame)
-        const topic = '/topic/messages/foo'
+        const topic = '/topic/messages'
         const callback = (message) => {
           const tick = JSON.parse(message.body)
           this.received_messages.push(tick)
@@ -81,5 +81,5 @@ export default {
       this.connected = false
     },
  },
-} 
+}
 </script>

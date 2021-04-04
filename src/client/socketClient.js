@@ -4,7 +4,7 @@ import SockJS from "sockjs-client"
 let socketClient = null
 
 function socketFactory(){
-    const url = "http://localhost:8080"
+    const url = "URL"
     const path= "ws"
 
     return new SockJS(`${url}/${path}`)
@@ -24,7 +24,7 @@ function getClient() {
         socketClient = new Client(getConfig())
         socketClient.activate()
     }
-
+    console.log(socketClient)
     return socketClient
 }
 
@@ -52,7 +52,7 @@ function emit(destination, object) {
 
 function disconnect() {
     const client = getClient()
-    
+
     if(client) {
         client.deactivate()
         socketClient = null
